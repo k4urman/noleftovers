@@ -1,1 +1,13 @@
 Use this a plan sheet for the project. (Will later be deleted)
+
+**Start**
+by: Kaurman, Shristi, and Soorya
+
+Questions to Discuss
+----------------------
+- What languages will we be utulizing?
+- Webiste or App?
+- SQL or just use CSV files and Python?
+- How will we make this known and popular around campus? Posters? Word of mouth?
+- How will the app work? (The logistics?)
+
