@@ -11,3 +11,7 @@ Questions to Discuss
 - How will we make this known and popular around campus? Posters? Word of mouth?
 - How will the app work? (The logistics?)
 
+Possible Logistics
+---------------------
+HTML Page with CSS and Javascript. Use Java with Java Server Pages and use SQL+Maven for all the database stuff. We could ditch Java for Python? Anyways, the person will signup (needs to do this), pick theior building (Northall or LUX), and then either list a food item or contact the person for their food itemm. 
+
