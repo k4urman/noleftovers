@@ -5,13 +5,13 @@ by: Kaurman, Srishti, and Soorya
 
 Questions to Discuss
 ----------------------
-- What languages will we be utulizing?
-- Webiste or App?
+- What languages will we be utilizing?
+- Website or App?
 - SQL or just use CSV files and Python?
 - How will we make this known and popular around campus? Posters? Word of mouth?
 - How will the app work? (The logistics?)
 
 Possible Logistics
 ---------------------
-HTML Page with CSS and Javascript. Use Java with Java Server Pages and use SQL+Maven for all the database stuff. We could ditch Java for Python? Anyways, the person will signup (needs to do this), pick theior building (Northall or LUX), and then either list a food item or contact the person for their food itemm. 
+HTML Page with CSS and Javascript. Use Java with Java Server Pages and use SQL+Maven for all the database stuff. We could ditch Java for Python? Anyways, the person will sign-up (needs to do this), pick their building (North Hall or LUX), and then either list a food item or contact the person for their food item. 
 
