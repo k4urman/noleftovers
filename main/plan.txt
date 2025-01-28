@@ -5,11 +5,11 @@ by: Kaurman, Srishti, and Soorya
 
 Questions to Discuss
 ----------------------
-- What languages will we be utilizing?
-- Website or App?
-- SQL or just use CSV files and Python?
-- How will we make this known and popular around campus? Posters? Word of mouth?
-- How will the app work? (The logistics?)
+- What languages will we be utilizing? Python & Java.
+- Website or App? App.
+- SQL or just use CSV files and Python? SQL. 
+- How will we make this known and popular around campus? Posters? Word of mouth? Word will spread naturally trust.
+- How will the app work? (The logistics?) 
 
 Possible Logistics
 ---------------------
