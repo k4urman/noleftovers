@@ -1,5 +1,3 @@
-
-```java
 // Main application class
 package com.leftovers.app;
 
