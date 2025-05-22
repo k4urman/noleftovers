@@ -159,4 +159,3 @@ public class Location {
         Files.write(Paths.get("src/main/resources/application.properties"), configContent.getBytes());
     }
 }
-```
