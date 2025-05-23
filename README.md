@@ -103,9 +103,8 @@ src/
 Feel free to fork the repository, submit issues, or create pull requests to enhance features like authentication, mobile support, or additional filters for food listings.
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the Creative Commons Legal Code License.
 
-```
 ### Placement
 - Save this content as `README.md` in the root directory of your project:
   ```
@@ -118,7 +117,6 @@ This project is licensed under the MIT License.
   ├── pom.xml
   └── ...
   ```
-```
 
 ### Explanation
 - **Overview**: Describes the app’s purpose and features to reduce food waste through location-based sharing.
