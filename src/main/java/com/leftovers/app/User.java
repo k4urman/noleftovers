@@ -19,7 +19,6 @@ public class User {
     private double latitude;
     private double longitude;
 
-    // Repository interface
     public interface UserRepository extends JpaRepository<User, Long> {
         User findByEmail(String email);
     }
