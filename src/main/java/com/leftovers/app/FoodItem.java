@@ -1,3 +1,4 @@
+```java
 // FoodItem.java
 package com.leftovers.app;
 
@@ -35,6 +36,8 @@ public class FoodItem {
 
     public static void main(String[] args) {
         SpringApplication.run(FoodItem.class, args);
+        // Launch JavaFX GUI after Spring Boot starts
+        new Thread(() -> MainApp.launchApp()).start();
     }
 
     // Repository interface
@@ -46,7 +49,7 @@ public class FoodItem {
         List<FoodItem> findNearbyListings(double latitude, double longitude, double distance);
     }
 
-    // Service and Controller logic
+    // Controller logic
     @GetMapping("/nearby")
     public List<FoodItem> getNearbyListings(
             @RequestParam double latitude,
