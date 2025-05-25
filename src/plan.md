@@ -114,3 +114,74 @@ Below is a mock `PLAN.txt` file outlining a high-level plan for developing the "
 - **Scalability**: The in-memory H2 database is suitable for development but not production. Plan to switch to a persistent database.
 - **Security**: No authentication in MVP. Add Spring Security for user login in future iterations.
 - **Mobile Support**: JavaFX is desktop-focused. For mobile, consider Gluon Mobile or rewriting the frontend in a mobile framework (e.g., Android SDK).
+
+5. Timeline
+-----------
+- Total Estimated Time: 11-16 days (assuming 1 developer, ~4-6 hours/day)
+- Phase 1: 1-2 days
+- Phase 2: 3-4 days
+- Phase 3: 4-5 days
+- Phase 4: 2-3 days
+- Phase 5: 1-2 days
+
+6. Risks and Mitigation
+-----------------------
+- **Risk**: JavaFX setup issues (e.g., module path errors).
+  - **Mitigation**: Provide clear IDE setup instructions in `README.md` and test on multiple environments.
+- **Risk**: Backend-frontend integration issues (e.g., API call failures).
+  - **Mitigation**: Use `RestTemplate` with robust error handling and test API endpoints with tools like Postman.
+- **Risk**: Limited map functionality due to Canvas.
+  - **Mitigation**: Document limitations and suggest advanced mapping libraries for future enhancements.
+
+7. Future Enhancements
+----------------------
+- Add user authentication with Spring Security.
+- Implement image uploads for food listings.
+- Integrate a geolocation API for automatic location detection.
+- Enhance the map with a proper mapping library or web view.
+- Add notifications for new nearby listings.
+- Adapt for mobile using Gluon Mobile or a native mobile framework.
+
+8. Milestones
+-------------
+- **MVP Complete**: Basic posting, viewing, and claiming functionality with JavaFX GUI and H2 database.
+- **Beta Release**: Add error handling, input validation, and improved UI styling.
+- **Production Ready**: Add authentication, persistent database, and advanced mapping.
+
+---
+### Placement
+- Save this content as `PLAN.txt` in the **root directory** of the project, alongside `pom.xml` and `README.md`:
+  ```
+  leftovers/
+  ├── PLAN.txt
+  ├── README.md
+  ├── pom.xml
+  ├── src/
+  │   ├── main/
+  │   │   ├── java/
+  │   │   │   └── com/leftovers/app/
+  │   │   │       ├── FoodItem.java
+  │   │   │       ├── User.java
+  │   │   │       ├── Location.java
+  │   │   │       └── MainApp.java
+  │   │   └── resources/
+  │   │       └── application.properties
+  ```
+
+### Explanation
+- **Purpose**: The `PLAN.txt` outlines a structured approach to developing the "Leftovers" desktop app, covering scope, tasks, timeline, risks, and future enhancements.
+- **Alignment with Code**: Reflects the provided `FoodItem`, `User`, `Location`, and `MainApp` classes, the JavaFX frontend, and the `application.properties` and `pom.xml` configurations.
+- **Key Sections**:
+  - **Scope**: Defines core features and tech stack, noting the switch to JavaFX and manual location input.
+  - **Approach**: Uses Agile with iterative phases for setup, backend, frontend, integration, and documentation.
+  - **Tasks**: Breaks down development into actionable steps, aligned with the provided code structure.
+  - **Considerations**: Addresses JavaFX limitations (e.g., no geolocation) and plans for production readiness.
+  - **Timeline**: Estimates 11-16 days for a single developer, realistic for an MVP.
+  - **Risks**: Identifies potential issues like JavaFX setup or integration, with mitigation strategies.
+  - **Enhancements**: Suggests future features like authentication or mobile support, consistent with the `README.md`.
+- **Format**: Simple text file for clarity, suitable for project planning and sharing with stakeholders.
+
+### Notes
+- The plan assumes a single developer working part-time (4-6 hours/day). Adjust the timeline for multiple developers or different work schedules.
+- The `Creative Commons Legal Code License` from the `README.md` is noted but not detailed here, as licensing is typically handled in `README.md`.
+- If you need specific additions (e.g., detailed testing strategies, team roles, or budget estimates), let me know, and I can expand the plan.
