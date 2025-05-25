@@ -1,4 +1,3 @@
-```java
 // FoodItem.java
 package com.leftovers.app;
 
