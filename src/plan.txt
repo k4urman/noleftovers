@@ -1,1 +1,25 @@
+PLAN
+====
 
+Project: Leftovers - Free Food Sharing Desktop App
+
+Objective:
+Develop a desktop application using Java, Spring Boot, and JavaFX to allow users to share and claim free food based on their location, reducing food waste. The app will include a backend for managing food listings and users, and a JavaFX GUI for posting food, viewing nearby listings, and claiming food.
+
+---
+
+1. Project Scope
+----------------
+- Core Features:
+  - Post food items with title, description, and location (latitude/longitude).
+  - View nearby food listings within a configurable radius (default: 10 km).
+  - Claim food to mark it as unavailable.
+  - Simple map visualization using JavaFX Canvas to show user and food locations.
+- Tech Stack:
+  - Backend: Java 17, Spring Boot, Spring Data JPA, H2 Database, Lombok
+  - Frontend: JavaFX (controls and FXML)
+  - Database: In-memory H2 database (for development)
+- Constraints:
+  - JavaFX lacks native geolocation; use manual coordinate input.
+  - Keep dependencies minimal; avoid external mapping libraries for simplicity.
+  - No authentication for initial version to focus on core functionality.
