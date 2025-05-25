@@ -23,3 +23,87 @@ Develop a desktop application using Java, Spring Boot, and JavaFX to allow users
   - JavaFX lacks native geolocation; use manual coordinate input.
   - Keep dependencies minimal; avoid external mapping libraries for simplicity.
   - No authentication for initial version to focus on core functionality.
+Below is a mock `PLAN.txt` file outlining a high-level plan for developing the "Leftovers" desktop application, a Java-based app using Spring Boot and JavaFX to reduce food waste by enabling users to share and claim free food based on location. The plan assumes the use of the provided `FoodItem`, `User`, `Location`, and `MainApp` classes, along with the `application.properties`, `pom.xml`, and the updated JavaFX-based `README.md`. It details the approach, tasks, and considerations for tackling the project, written as if planning the development from scratch.
+
+2. Development Approach
+----------------------
+- Use Agile methodology with iterative development.
+- Break down into phases: setup, backend, frontend, integration, testing, and deployment.
+- Prioritize minimal viable product (MVP) with core features first, then consider enhancements.
+- Use Maven for dependency management and project builds.
+- Test incrementally using H2 console and manual GUI testing.
+
+3. Task Breakdown
+-----------------
+
+### Phase 1: Project Setup (1-2 days)
+- [ ] Set up development environment:
+  - Install Java 17, Maven 3.6+, and JavaFX SDK (OpenJFX 17+).
+  - Configure IDE (e.g., IntelliJ IDEA) with JavaFX module path.
+- [ ] Create Maven project:
+  - Place `pom.xml` in root directory with dependencies for Spring Boot, H2, Lombok, and JavaFX.
+  - Ensure `javafx-maven-plugin` is included for GUI builds.
+- [ ] Define project structure:
+  - Create `src/main/java/com/leftovers/app/` for Java classes.
+  - Create `src/main/resources/` for `application.properties`.
+
+### Phase 2: Backend Development (3-4 days)
+- [ ] Design data model:
+  - Create `FoodItem` class (entity with ID, title, description, latitude, longitude, postedAt, isAvailable, user).
+  - Create `User` class (entity with ID, username, email, password, latitude, longitude).
+- [ ] Implement repositories:
+  - Embed `FoodItemRepository` in `FoodItem` with custom Haversine query for nearby listings.
+  - Embed `UserRepository` in `User` for basic CRUD and email lookup.
+- [ ] Implement REST API:
+  - Add controller methods in `FoodItem` for:
+    - GET `/api/food/nearby` (find nearby listings).
+    - POST `/api/food` (create food listing).
+    - POST `/api/food/{id}/claim` (claim food).
+- [ ] Configure database:
+  - Create `application.properties` in `src/main/resources/` for H2 in-memory database.
+  - Use `Location.generateConfig()` to generate the config file programmatically.
+  - Enable H2 console for debugging (`http://localhost:8080/h2-console`).
+
+### Phase 3: Frontend Development (4-5 days)
+- [ ] Design JavaFX GUI in `MainApp` class:
+  - Use `TabPane` with two tabs: "Post Food" and "View Nearby".
+  - **Post Food Tab**:
+    - Add fields for title, description, latitude, longitude.
+    - Include "Post Food" button to send POST request to `/api/food`.
+  - **View Nearby Tab**:
+    - Add fields for user latitude, longitude, and distance.
+    - Include "Search Nearby" button to fetch listings via GET `/api/food/nearby`.
+    - Use `ListView` to display food items.
+    - Use `Canvas` to draw a simple map (user as circle, food as squares).
+    - Allow clicking a list item to claim food via POST `/api/food/{id}/claim`.
+- [ ] Handle location input:
+  - Use text fields for manual latitude/longitude input (default: 51.505, -0.09).
+  - Display warning if coordinates are invalid.
+- [ ] Integrate with backend:
+  - Use `RestTemplate` to make HTTP requests to the Spring Boot API.
+  - Handle errors with `Alert` dialogs for user feedback.
+
+### Phase 4: Integration and Testing (2-3 days)
+- [ ] Integrate backend and frontend:
+  - Ensure `FoodItem.main()` launches both Spring Boot and JavaFX (`MainApp.launchApp()`).
+  - Verify API calls from JavaFX to backend work correctly.
+- [ ] Test core functionality:
+  - Post food with valid/invalid inputs.
+  - Search for nearby listings with different coordinates and distances.
+  - Claim food and verify it becomes unavailable.
+  - Check H2 console for data consistency.
+- [ ] Debug issues:
+  - Use logging (`logging.level.com.leftovers.app=DEBUG`) for backend errors.
+  - Test JavaFX GUI responsiveness and error handling.
+
+### Phase 5: Documentation and Deployment (1-2 days)
+- [ ] Write `README.md`:
+  - Include project overview, features, tech stack, setup instructions, usage, and troubleshooting.
+  - Document `pom.xml` and `application.properties` setup.
+- [ ] Package the app:
+  - Build executable JAR with `mvn clean install`.
+  - Test running the JAR with JavaFX VM options.
+- [ ] Plan for production (optional):
+  - Outline steps for switching to PostgreSQL.
+  - Suggest adding Spring Security for authentication.
+
