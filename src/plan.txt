@@ -107,3 +107,10 @@ Below is a mock `PLAN.txt` file outlining a high-level plan for developing the "
   - Outline steps for switching to PostgreSQL.
   - Suggest adding Spring Security for authentication.
 
+4. Key Considerations
+---------------------
+- **Geolocation**: JavaFX lacks native geolocation. Manual coordinate input is a workaround. For a real app, consider integrating a geolocation API or platform-specific libraries.
+- **Map Visualization**: The Canvas-based map is basic. For advanced mapping, explore embedding a web view with Leaflet or using JXMapViewer (additional dependency).
+- **Scalability**: The in-memory H2 database is suitable for development but not production. Plan to switch to a persistent database.
+- **Security**: No authentication in MVP. Add Spring Security for user login in future iterations.
+- **Mobile Support**: JavaFX is desktop-focused. For mobile, consider Gluon Mobile or rewriting the frontend in a mobile framework (e.g., Android SDK).
