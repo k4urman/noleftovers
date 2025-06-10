@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="ch.randelshofer.monte.media.javafx" type="repository">
+    <properties maven-id="ch.randelshofer:org.monte.media.javafx:17.1" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/ch/randelshofer/org.monte.media.javafx/17.1/org.monte.media.javafx-17.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/ch/randelshofer/org.monte.media/17.1/org.monte.media-17.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-controls/19.0.2.1/javafx-controls-19.0.2.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-controls/19.0.2.1/javafx-controls-19.0.2.1-mac.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-graphics/19.0.2.1/javafx-graphics-19.0.2.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-graphics/19.0.2.1/javafx-graphics-19.0.2.1-mac.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-base/19.0.2.1/javafx-base-19.0.2.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-base/19.0.2.1/javafx-base-19.0.2.1-mac.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-swing/19.0.2.1/javafx-swing-19.0.2.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/openjfx/javafx-swing/19.0.2.1/javafx-swing-19.0.2.1-mac.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
