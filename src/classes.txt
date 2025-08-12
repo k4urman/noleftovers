@@ -18,8 +18,9 @@ SELLER
 
 FOOD
 ----
-food.id
-food.name
-food.location
-food.owner
-food.exp
+-food.id
+-food.bio
+-food.name
+-food.location
+-food.owner
+-food.exp
