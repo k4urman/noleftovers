@@ -22,5 +22,6 @@ FOOD
 -food.bio
 -food.name
 -food.location
+-food.isAv
 -food.owner
 -food.exp
