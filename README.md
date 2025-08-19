@@ -1,6 +1,6 @@
-# leftovers
+# noleftovers
 
-Leftovers is a desktop application built with Java, Spring Boot, and JavaFX to reduce food waste by enabling users to share and claim free food based on their location. Users can post food items, view nearby listings in a graphical interface, and claim available food, promoting sustainability and community engagement.
+NoLeftovers is a desktop application built with Java, Spring Boot, and JavaFX to reduce food waste by enabling users to share and claim free food based on their location. Users can post food items, view nearby listings in a graphical interface, and claim available food, promoting sustainability and community engagement.
 
 ## Features
 - **Post Food**: Share food items with a title, description, and manually entered location (latitude and longitude).
@@ -21,7 +21,7 @@ leftovers/
 ├── src/
 │   ├── main/
 │   │   ├── java/
-│   │   │   └── com/leftovers/app/
+│   │   │   └── com/noleftovers/app/
 │   │   │       ├── FoodItem.java       # Main app, entity, repository, and controller logic
 │   │   │       ├── User.java           # User entity and repository
 │   │   │       ├── Location.java       # Utility for generating config
@@ -41,15 +41,15 @@ leftovers/
 1. **Clone the Repository** (or create a new project):
    ```bash
    git clone <repository-url>
-   cd leftovers
+   cd noleftovers
    ```
    Alternatively, create a new Maven project and add the provided files.
 
 2. **Add Source Files**:
-   - Place `FoodItem.java`, `User.java`, `Location.java`, and `MainApp.java` in `src/main/java/com/leftovers/app/`.
+   - Place `FoodItem.java`, `User.java`, `Location.java`, and `MainApp.java` in `src/main/java/com/noleftovers/app/`.
    - Create `application.properties` in `src/main/resources/` with the following:
      ```properties
-     spring.datasource.url=jdbc:h2:mem:leftovers
+     spring.datasource.url=jdbc:h2:mem:noleftovers
      spring.datasource.driverClassName=org.h2.Driver
      spring.datasource.username=sa
      spring.datasource.password=
@@ -60,7 +60,7 @@ leftovers/
      spring.h2.console.path=/h2-console
      server.port=8080
      logging.level.org.springframework=INFO
-     logging.level.com.leftovers.app=DEBUG
+     logging.level.com.noleftovers.app=DEBUG
      ```
      Alternatively, run `Location.generateConfig()` to generate `application.properties`.
 
@@ -72,10 +72,10 @@ leftovers/
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
          <modelVersion>4.0.0</modelVersion>
-         <groupId>com.leftovers</groupId>
-         <artifactId>leftovers</artifactId>
+         <groupId>com.noleftovers</groupId>
+         <artifactId>noleftovers</artifactId>
          <version>1.0-SNAPSHOT</version>
-         <name>Leftovers</name>
+         <name>noleftovers</name>
          <description>A Java app for sharing free food to reduce waste</description>
          <properties>
              <java.version>17</java.version>
@@ -149,7 +149,7 @@ leftovers/
                      <artifactId>javafx-maven-plugin</artifactId>
                      <version>0.0.8</version>
                      <configuration>
-                         <mainClass>com.leftovers.app.FoodItem</mainClass>
+                         <mainClass>com.noleftovers.app.FoodItem</mainClass>
                      </configuration>
                  </plugin>
              </plugins>
@@ -176,7 +176,7 @@ leftovers/
 
 7. **Access the H2 Console** (optional):
    - Open `http://localhost:8080/h2-console` in a browser for database inspection.
-   - Use JDBC URL: `jdbc:h2:mem:leftovers`, username: `sa`, no password.
+   - Use JDBC URL: `jdbc:h2:mem:noleftovers`, username: `sa`, no password.
 
 ## Usage
 1. **Post Food**:
@@ -214,13 +214,13 @@ This project is licensed under the Creative Commons Legal Code License.
 ### Placement
 - Save this content as `README.md` in the **root directory** of the project:
   ```
-  leftovers/
+  noleftovers/
   ├── README.md
   ├── pom.xml
   ├── src/
   │   ├── main/
   │   │   ├── java/
-  │   │   │   └── com/leftovers/app/
+  │   │   │   └── com/noleftovers/app/
   │   │   │       ├── FoodItem.java
   │   │   │       ├── User.java
   │   │   │       ├── Location.java
