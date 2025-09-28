@@ -1,25 +1,42 @@
-// User.java
-package com.leftovers.app;
+package com.noleftovers.app;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
+@Table(name = "users")
 @Data
-@Component
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String username;
+    
+    @Column(nullable = false)
+    private String name;
+    
+    @Column(nullable = false, unique = true)
     private String email;
-    private String password;
-    private double latitude;
-    private double longitude;
+    
+    @Column
+    private Double latitude;
+    
+    @Column
+    private Double longitude;
+    
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<FoodItemEntity> foodItems;
+}
 
-    public interface UserRepository extends JpaRepository<User, Long> {
-        User findByEmail(String email);
-    }
+interface UserRepository extends JpaRepository<User, Long> {
+    User findByEmail(String email);
 }
