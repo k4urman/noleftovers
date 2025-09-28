@@ -1,75 +1,159 @@
-// FoodItem.java
-package com.leftovers.app;
+package com.noleftovers.app;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Component;
+import org.springframework.data.repository.query.Param;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-@SpringBootApplication
-@Component
 @Entity
+@Table(name = "food_items")
 @Data
-@RestController
-@RequestMapping("/api/food")
-public class FoodItem {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+class FoodItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Column(nullable = false)
+    private String title;
+    
+    @Column(columnDefinition = "TEXT")
+    private String description;
+    
+    @Column(nullable = false)
+    private Double latitude;
+    
+    @Column(nullable = false)
+    private Double longitude;
+    
+    @Column(nullable = false)
+    private Boolean available = true;
+    
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+}
+
+interface FoodItemRepository extends JpaRepository<FoodItemEntity, Long> {
+    @Query("SELECT f FROM FoodItemEntity f WHERE f.available = true AND " +
+           "(6371 * acos(cos(radians(:lat)) * cos(radians(f.latitude)) * " +
+           "cos(radians(f.longitude) - radians(:lng)) + sin(radians(:lat)) * " +
+           "sin(radians(f.latitude)))) <= :distance")
+    List<FoodItemEntity> findNearbyAvailableFood(
+        @Param("lat") Double latitude,
+        @Param("lng") Double longitude,
+        @Param("distance") Double distanceKm
+    );
+    
+    List<FoodItemEntity> findByAvailableTrue();
+}
+
+@RestController
+@RequestMapping("/api/food")
+class FoodItemController {
+    
+    @Autowired
+    private FoodItemRepository foodItemRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @PostMapping
+    public ResponseEntity<FoodItemEntity> createFoodItem(@RequestBody CreateFoodItemRequest request) {
+        // Create or get default user
+        User user = userRepository.findById(1L)
+            .orElseGet(() -> userRepository.save(User.builder()
+                .name("Default User")
+                .email("user@noleftovers.com")
+                .build()));
+        
+        FoodItemEntity foodItem = FoodItemEntity.builder()
+            .title(request.getTitle())
+            .description(request.getDescription())
+            .latitude(request.getLatitude() != null ? request.getLatitude() : 51.505)
+            .longitude(request.getLongitude() != null ? request.getLongitude() : -0.09)
+            .available(true)
+            .createdAt(LocalDateTime.now())
+            .user(user)
+            .build();
+        
+        FoodItemEntity saved = foodItemRepository.save(foodItem);
+        return ResponseEntity.ok(saved);
+    }
+    
+    @GetMapping("/nearby")
+    public ResponseEntity<List<FoodItemEntity>> getNearbyFood(
+            @RequestParam Double lat,
+            @RequestParam Double lng,
+            @RequestParam(defaultValue = "10.0") Double distance) {
+        
+        List<FoodItemEntity> nearbyFood = foodItemRepository.findNearbyAvailableFood(lat, lng, distance);
+        return ResponseEntity.ok(nearbyFood);
+    }
+    
+    @GetMapping
+    public ResponseEntity<List<FoodItemEntity>> getAllAvailableFood() {
+        List<FoodItemEntity> availableFood = foodItemRepository.findByAvailableTrue();
+        return ResponseEntity.ok(availableFood);
+    }
+    
+    @PutMapping("/{id}/claim")
+    public ResponseEntity<FoodItemEntity> claimFood(@PathVariable Long id) {
+        Optional<FoodItemEntity> optionalFood = foodItemRepository.findById(id);
+        if (optionalFood.isPresent()) {
+            FoodItemEntity food = optionalFood.get();
+            food.setAvailable(false);
+            FoodItemEntity updated = foodItemRepository.save(food);
+            return ResponseEntity.ok(updated);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class CreateFoodItemRequest {
     private String title;
     private String description;
-    private double latitude;
-    private double longitude;
-    private LocalDateTime postedAt;
-    private boolean isAvailable;
+    private Double latitude;
+    private Double longitude;
+}
 
-    @ManyToOne
-    private User user;
-
+@SpringBootApplication
+public class FoodItem {
     public static void main(String[] args) {
-        SpringApplication.run(FoodItem.class, args);
-        // Launch JavaFX GUI after Spring Boot starts
-        new Thread(() -> MainApp.launchApp()).start();
-    }
-
-    // Repository interface
-    public interface FoodItemRepository extends JpaRepository<FoodItem, Long> {
-        @Query("SELECT f FROM FoodItem f WHERE f.isAvailable = true " +
-               "AND (6371 * acos(cos(radians(:latitude)) * cos(radians(f.latitude)) * " +
-               "cos(radians(f.longitude) - radians(:longitude)) + sin(radians(:latitude)) * " +
-               "sin(radians(f.latitude)))) < :distance")
-        List<FoodItem> findNearbyListings(double latitude, double longitude, double distance);
-    }
-
-    // Controller logic
-    @GetMapping("/nearby")
-    public List<FoodItem> getNearbyListings(
-            @RequestParam double latitude,
-            @RequestParam double longitude,
-            @RequestParam(defaultValue = "10") double distance,
-            FoodItemRepository repository) {
-        return repository.findNearbyListings(latitude, longitude, distance);
-    }
-
-    @PostMapping
-    public FoodItem createListing(@RequestBody FoodItem foodItem, FoodItemRepository repository) {
-        foodItem.setPostedAt(LocalDateTime.now());
-        foodItem.setAvailable(true);
-        return repository.save(foodItem);
-    }
-
-    @PostMapping("/{id}/claim")
-    public void claimListing(@PathVariable Long id, FoodItemRepository repository) {
-        FoodItem foodItem = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Food item not found"));
-        foodItem.setAvailable(false);
-        repository.save(foodItem);
+        // Start Spring Boot application in a separate thread
+        Thread springThread = new Thread(() -> {
+            SpringApplication.run(FoodItem.class, args);
+        });
+        springThread.setDaemon(true);
+        springThread.start();
+        
+        // Wait a bit for Spring Boot to start
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        // Launch JavaFX GUI
+        MainApp.main(args);
     }
 }
