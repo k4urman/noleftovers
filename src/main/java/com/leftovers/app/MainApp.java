@@ -1,185 +1,386 @@
-// MainApp.java
-package com.leftovers.app;
+package com.noleftovers.app;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import org.springframework.web.client.RestTemplate;
+import javafx.scene.paint.Color;
 
-import java.time.LocalDateTime;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public class MainApp extends Application {
-    private RestTemplate restTemplate = new RestTemplate();
-    private double userLat = 51.505; // Default user location
-    private double userLon = -0.09;
-    private static final String API_URL = "http://localhost:8080/api/food";
-
-    public static void launchApp() {
-        Application.launch(MainApp.class);
-    }
-
+    
+    private static final String BASE_URL = "http://localhost:8080/api/food";
+    private ObjectMapper objectMapper = new ObjectMapper();
+    
+    private ListView<FoodItemDisplay> foodListView;
+    private ObservableList<FoodItemDisplay> foodItems;
+    private Canvas mapCanvas;
+    private double userLat = Location.DEFAULT_LATITUDE;
+    private double userLng = Location.DEFAULT_LONGITUDE;
+    private double searchRadius = Location.DEFAULT_SEARCH_RADIUS;
+    
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Leftovers - Free Food Sharing");
-
-        // Main layout
-        BorderPane root = new BorderPane();
+        primaryStage.setTitle("NoLeftovers - Food Sharing App");
+        
         TabPane tabPane = new TabPane();
-
-        // Tab 1: Post Food
-        VBox postFoodTab = createPostFoodTab();
-        Tab postTab = new Tab("Post Food", postFoodTab);
-        postTab.setClosable(false);
-
-        // Tab 2: View Nearby Food
-        VBox viewFoodTab = createViewFoodTab();
-        Tab viewTab = new Tab("View Nearby", viewFoodTab);
-        viewTab.setClosable(false);
-
-        tabPane.getTabs().addAll(postTab, viewTab);
-        root.setCenter(tabPane);
-
-        // Scene
-        Scene scene = new Scene(root, 600, 400);
+        tabPane.getTabs().addAll(createPostFoodTab(), createViewNearbyTab());
+        
+        Scene scene = new Scene(tabPane, 800, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
+        
+        // Initialize food list
+        foodItems = FXCollections.observableArrayList();
+        loadNearbyFood();
     }
-
-    private VBox createPostFoodTab() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(10));
-        vbox.setAlignment(Pos.CENTER);
-
+    
+    private Tab createPostFoodTab() {
+        Tab tab = new Tab("Post Food");
+        tab.setClosable(false);
+        
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(20));
+        
+        Label titleLabel = new Label("Food Title:");
         TextField titleField = new TextField();
-        titleField.setPromptText("Food Title");
-        TextArea descField = new TextArea();
-        descField.setPromptText("Description");
-        descField.setPrefRowCount(3);
-        TextField latField = new TextField(String.valueOf(userLat));
-        latField.setPromptText("Latitude");
-        TextField lonField = new TextField(String.valueOf(userLon));
-        lonField.setPromptText("Longitude");
+        titleField.setPromptText("e.g., Fresh Apples");
+        
+        Label descLabel = new Label("Description:");
+        TextArea descArea = new TextArea();
+        descArea.setPromptText("Describe the food item...");
+        descArea.setPrefRowCount(3);
+        
+        Label latLabel = new Label("Latitude:");
+        TextField latField = new TextField(String.valueOf(Location.DEFAULT_LATITUDE));
+        
+        Label lngLabel = new Label("Longitude:");
+        TextField lngField = new TextField(String.valueOf(Location.DEFAULT_LONGITUDE));
+        
         Button postButton = new Button("Post Food");
-
         postButton.setOnAction(e -> {
             try {
-                FoodItem foodItem = new FoodItem();
-                foodItem.setTitle(titleField.getText());
-                foodItem.setDescription(descField.getText());
-                foodItem.setLatitude(Double.parseDouble(latField.getText()));
-                foodItem.setLongitude(Double.parseDouble(lonField.getText()));
-                foodItem.setPostedAt(LocalDateTime.now());
-                foodItem.setAvailable(true);
-
-                restTemplate.postForObject(API_URL, foodItem, FoodItem.class);
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Food posted successfully!");
+                String title = titleField.getText().trim();
+                String description = descArea.getText().trim();
+                double lat = Double.parseDouble(latField.getText());
+                double lng = Double.parseDouble(lngField.getText());
+                
+                if (title.isEmpty()) {
+                    showAlert("Error", "Title is required");
+                    return;
+                }
+                
+                if (!Location.isValidCoordinates(lat, lng)) {
+                    showAlert("Error", "Invalid coordinates");
+                    return;
+                }
+                
+                postFoodItem(title, description, lat, lng);
+                
+                // Clear form
                 titleField.clear();
-                descField.clear();
-            } catch (Exception ex) {
-                showAlert(Alert.AlertType.ERROR, "Error", "Failed to post food: " + ex.getMessage());
+                descArea.clear();
+                latField.setText(String.valueOf(Location.DEFAULT_LATITUDE));
+                lngField.setText(String.valueOf(Location.DEFAULT_LONGITUDE));
+                
+                showAlert("Success", "Food item posted successfully!");
+                
+            } catch (NumberFormatException ex) {
+                showAlert("Error", "Invalid coordinates format");
             }
         });
-
-        vbox.getChildren().addAll(
-                new Label("Share Food"), titleField, descField,
-                new Label("Location"), latField, lonField, postButton
+        
+        content.getChildren().addAll(
+            titleLabel, titleField,
+            descLabel, descArea,
+            latLabel, latField,
+            lngLabel, lngField,
+            postButton
         );
-        return vbox;
+        
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        tab.setContent(scrollPane);
+        
+        return tab;
     }
-
-    private VBox createViewFoodTab() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(10));
-        vbox.setAlignment(Pos.CENTER);
-
-        TextField latField = new TextField(String.valueOf(userLat));
-        latField.setPromptText("Your Latitude");
-        TextField lonField = new TextField(String.valueOf(userLon));
-        lonField.setPromptText("Your Longitude");
-        TextField distanceField = new TextField("10");
-        distanceField.setPromptText("Distance (km)");
+    
+    private Tab createViewNearbyTab() {
+        Tab tab = new Tab("View Nearby");
+        tab.setClosable(false);
+        
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(20));
+        
+        // Search controls
+        HBox searchBox = new HBox(10);
+        
+        Label latLabel = new Label("Your Latitude:");
+        TextField userLatField = new TextField(String.valueOf(userLat));
+        userLatField.setPrefWidth(100);
+        
+        Label lngLabel = new Label("Longitude:");
+        TextField userLngField = new TextField(String.valueOf(userLng));
+        userLngField.setPrefWidth(100);
+        
+        Label radiusLabel = new Label("Distance (km):");
+        TextField radiusField = new TextField(String.valueOf(searchRadius));
+        radiusField.setPrefWidth(80);
+        
         Button searchButton = new Button("Search Nearby");
-        ListView<String> foodList = new ListView<>();
-        Canvas mapCanvas = new Canvas(400, 200);
-
         searchButton.setOnAction(e -> {
             try {
-                double lat = Double.parseDouble(latField.getText());
-                double lon = Double.parseDouble(lonField.getText());
-                double distance = Double.parseDouble(distanceField.getText());
-                userLat = lat;
-                userLon = lon;
-
-                FoodItem[] listings = restTemplate.getForObject(
-                        API_URL + "/nearby?latitude={lat}&longitude={lon}&distance={dist}",
-                        FoodItem[].class, lat, lon, distance
-                );
-
-                foodList.getItems().clear();
-                if (listings != null) {
-                    for (FoodItem item : listings) {
-                        foodList.getItems().add(
-                                item.getId() + ": " + item.getTitle() + " - " + item.getDescription() +
-                                " (" + item.getLatitude() + ", " + item.getLongitude() + ")"
-                        );
-                    }
-                    drawMap(mapCanvas, listings, lat, lon);
+                userLat = Double.parseDouble(userLatField.getText());
+                userLng = Double.parseDouble(userLngField.getText());
+                searchRadius = Double.parseDouble(radiusField.getText());
+                
+                if (!Location.isValidCoordinates(userLat, userLng)) {
+                    showAlert("Error", "Invalid coordinates");
+                    return;
                 }
-            } catch (Exception ex) {
-                showAlert(Alert.AlertType.ERROR, "Error", "Failed to load listings: " + ex.getMessage());
+                
+                loadNearbyFood();
+                updateMap();
+                
+            } catch (NumberFormatException ex) {
+                showAlert("Error", "Invalid number format");
             }
         });
-
-        foodList.setOnMouseClicked(e -> {
-            String selected = foodList.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                Long id = Long.parseLong(selected.split(":")[0]);
-                try {
-                    restTemplate.postForObject(API_URL + "/{id}/claim", null, Void.class, id);
-                    searchButton.fire(); // Refresh list
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Food claimed!");
-                } catch (Exception ex) {
-                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to claim food: " + ex.getMessage());
-                }
-            }
-        });
-
-        vbox.getChildren().addAll(
-                new Label("Find Nearby Food"), latField, lonField, distanceField, searchButton,
-                new Label("Available Food"), foodList, mapCanvas
+        
+        searchBox.getChildren().addAll(
+            latLabel, userLatField,
+            lngLabel, userLngField,
+            radiusLabel, radiusField,
+            searchButton
         );
-        return vbox;
-    }
-
-    private void drawMap(Canvas canvas, FoodItem[] listings, double userLat, double userLon) {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
-        // Simple map: center is user location, scale coordinates
-        double scale = 10; // Pixels per degree for visualization
-        gc.fillOval(200 - 5, 100 - 5, 10, 10); // User location (center)
-
-        if (listings != null) {
-            for (FoodItem item : listings) {
-                double x = 200 + (item.getLongitude() - userLon) * scale;
-                double y = 100 - (item.getLatitude() - userLat) * scale; // Invert y for canvas
-                gc.fillRect(x - 3, y - 3, 6, 6); // Food item as square
+        
+        // Food list
+        foodListView = new ListView<>();
+        foodListView.setPrefHeight(200);
+        foodListView.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2) {
+                FoodItemDisplay selected = foodListView.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    claimFood(selected.getId());
+                }
             }
+        });
+        
+        // Map canvas
+        mapCanvas = new Canvas(400, 300);
+        mapCanvas.setStyle("-fx-border-color: black;");
+        
+        Label mapLabel = new Label("Map (Circle = You, Squares = Food):");
+        Label instructionLabel = new Label("Double-click a food item in the list to claim it");
+        
+        content.getChildren().addAll(
+            searchBox,
+            new Label("Available Food Items:"),
+            foodListView,
+            instructionLabel,
+            mapLabel,
+            mapCanvas
+        );
+        
+        tab.setContent(content);
+        
+        return tab;
+    }
+    
+    private void postFoodItem(String title, String description, double lat, double lng) {
+        try {
+            URL url = new URL(BASE_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+            
+            String jsonInput = String.format(
+                "{\"title\":\"%s\",\"description\":\"%s\",\"latitude\":%f,\"longitude\":%f}",
+                title, description, lat, lng
+            );
+            
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonInput.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+            
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                loadNearbyFood(); // Refresh list
+            }
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showAlert("Error", "Failed to post food item: " + ex.getMessage());
         }
     }
+    
+    private void loadNearbyFood() {
+        try {
+            String urlStr = String.format("%s/nearby?lat=%f&lng=%f&distance=%f", 
+                BASE_URL, userLat, userLng, searchRadius);
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            
+            if (conn.getResponseCode() == 200) {
+                BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+                
+                // Parse JSON response
+                JsonNode jsonArray = objectMapper.readTree(response.toString());
+                List<FoodItemDisplay> items = new ArrayList<>();
+                
+                for (JsonNode node : jsonArray) {
+                    FoodItemDisplay item = new FoodItemDisplay(
+                        node.get("id").asLong(),
+                        node.get("title").asText(),
+                        node.get("description").asText(),
+                        node.get("latitude").asDouble(),
+                        node.get("longitude").asDouble(),
+                        node.get("available").asBoolean()
+                    );
+                    if (item.isAvailable()) {
+                        items.add(item);
+                    }
+                }
+                
+                Platform.runLater(() -> {
+                    foodItems.clear();
+                    foodItems.addAll(items);
+                    if (foodListView != null) {
+                        foodListView.setItems(foodItems);
+                    }
+                    updateMap();
+                });
+            }
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    private void claimFood(Long foodId) {
+        try {
+            URL url = new URL(BASE_URL + "/" + foodId + "/claim");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("PUT");
+            
+            if (conn.getResponseCode() == 200) {
+                showAlert("Success", "Food claimed successfully!");
+                loadNearbyFood(); // Refresh list
+            }
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showAlert("Error", "Failed to claim food: " + ex.getMessage());
+        }
+    }
+    
+    private void updateMap() {
+        if (mapCanvas == null) return;
+        
+        GraphicsContext gc = mapCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, mapCanvas.getWidth(), mapCanvas.getHeight());
+        
+        // Draw background
+        gc.setFill(Color.LIGHTBLUE);
+        gc.fillRect(0, 0, mapCanvas.getWidth(), mapCanvas.getHeight());
+        
+        // Calculate bounds for mapping coordinates to canvas
+        double minLat = userLat - searchRadius / 111.0; // Rough conversion
+        double maxLat = userLat + searchRadius / 111.0;
+        double minLng = userLng - searchRadius / (111.0 * Math.cos(Math.toRadians(userLat)));
+        double maxLng = userLng + searchRadius / (111.0 * Math.cos(Math.toRadians(userLat)));
+        
+        // Draw user location (circle)
+        gc.setFill(Color.BLUE);
+        double userX = mapCoordToCanvas(userLng, minLng, maxLng, mapCanvas.getWidth());
+        double userY = mapCoordToCanvas(userLat, minLat, maxLat, mapCanvas.getHeight());
+        gc.fillOval(userX - 5, userY - 5, 10, 10);
+        
+        // Draw food items (squares)
+        gc.setFill(Color.RED);
+        for (FoodItemDisplay food : foodItems) {
+            double foodX = mapCoordToCanvas(food.getLongitude(), minLng, maxLng, mapCanvas.getWidth());
+            double foodY = mapCoordToCanvas(food.getLatitude(), minLat, maxLat, mapCanvas.getHeight());
+            gc.fillRect(foodX - 3, foodY - 3, 6, 6);
+        }
+    }
+    
+    private double mapCoordToCanvas(double coord, double min, double max, double canvasSize) {
+        return ((coord - min) / (max - min)) * canvasSize;
+    }
+    
+    private void showAlert(String title, String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
+    }
+    
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
 
-    private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+class FoodItemDisplay {
+    private Long id;
+    private String title;
+    private String description;
+    private double latitude;
+    private double longitude;
+    private boolean available;
+    
+    public FoodItemDisplay(Long id, String title, String description, 
+                          double latitude, double longitude, boolean available) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.available = available;
+    }
+    
+    // Getters
+    public Long getId() { return id; }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public double getLatitude() { return latitude; }
+    public double getLongitude() { return longitude; }
+    public boolean isAvailable() { return available; }
+    
+    @Override
+    public String toString() {
+        return String.format("%s - %s (%.3f, %.3f)", 
+            title, description, latitude, longitude);
     }
 }
